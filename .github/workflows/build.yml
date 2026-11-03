@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     name: Build with Xcode 27
-    
     runs-on: xcode-27
 
     steps:
@@ -17,13 +16,13 @@ jobs:
 
       - name: Confirm Xcode Version
         run: |
-          
           xcodebuild -version
 
       - name: Build and Archive
         run: |
           mkdir -p build
 
+          
           xcodebuild -project LiveSimBooter.xcodeproj \
             -scheme LiveSimBooter \
             -configuration Debug \
@@ -32,12 +31,16 @@ jobs:
             archive -archivePath Build/LiveSimBooter.xcarchive \
             CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
-      - name: Export IPA
+      - name: Export IPA from Archive
         run: |
+          
           mkdir -p Build/Payload
-          cp -r Build/DerivedData/Build/Products/Debug-iphoneos/*.app Build/Payload/
-          cd Build && zip -r LiveSimBooter-Debug.zip Payload
-          mv LiveSimBooter-Debug.zip ../LiveSimBooter.ipa
+          cp -r Build/DerivedData/Build/Products/Debug-iphoneos/*.app Build/Payload/ \
+            || cp -r Build/LiveSimBooter.xcarchive/Products/Applications/*.app Build/Payload/
+
+          
+          cd Build && zip -r LiveSimBooter.zip Payload
+          mv LiveSimBooter.zip ../LiveSimBooter.ipa
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
