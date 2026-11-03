@@ -1,0 +1,46 @@
+name: Build iOS App
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    name: Build with Xcode
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode Version
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
+
+      - name: Build and Archive
+        run: |
+          mkdir -p build
+
+          xcodebuild -project LiveSimBooter.xcodeproj \
+            -scheme LiveSimBooter \
+            -configuration Debug \
+            -sdk iphoneos \
+            -derivedDataPath Build/DerivedData \
+            archive -archivePath Build/LiveSimBooter.xcarchive \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+      - name: Export IPA
+        run: |
+          
+          mkdir -p Build/Payload
+          cp -r Build/DerivedData/Build/Products/Debug-iphoneos/*.app Build/Payload/
+          cd Build && zip -r LiveSimBooter-Debug.zip Payload
+          mv LiveSimBooter-Debug.zip ../LiveSimBooter.ipa
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LiveSimBooter
+          path: LiveSimBooter.ipa
