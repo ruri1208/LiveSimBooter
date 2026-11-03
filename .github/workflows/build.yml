@@ -14,18 +14,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Check Xcode Version & Path
+      - name: Select Latest Xcode
         run: |
           
-          xcodebuild -version
+          sudo xcode-select -s /Applications/Xcode.app
           
-          find . -name "*.xcodeproj"
+          xcodebuild -version
 
       - name: Build and Archive
         run: |
           mkdir -p build
 
-          
           xcodebuild -project LiveSimBooter.xcodeproj \
             -scheme LiveSimBooter \
             -configuration Debug \
